@@ -133,6 +133,30 @@ class EndpointTests(unittest.TestCase):
             content_type="application/json",
         )
 
+    def test_click_with_expired_hmac(self):
+        url = "https://example.com"
+        data = _encode_data({
+            "link_id": "foo",
+            "campaign_id": "bar",
+        })
+
+        click_url = _generate_click_url(
+            url, data,
+            expires=timedelta(seconds=-1),
+        )
+        response = self.test_app.get(
+            click_url,
+            status=301,
+        )
+
+        self.assertResponse(
+            response=response,
+            status_int=301,
+            headers=dict(
+                location=url,
+            ),
+        )
+
     def test_click_redirects(self):
         url = "https://example.com"
         data = _encode_data({
