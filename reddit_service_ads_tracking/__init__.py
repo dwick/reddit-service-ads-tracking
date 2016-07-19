@@ -110,7 +110,7 @@ class TrackingService(object):
 def make_wsgi_app(app_config):
     cfg = config.parse_config(app_config)
 
-    signer = MessageSigner(cfg.click_secret)
+    signer = MessageSigner(cfg.ads_tracking.click_secret)
     event_queue = events.EventQueue("production")
 
     metrics_client = make_metrics_client(app_config)

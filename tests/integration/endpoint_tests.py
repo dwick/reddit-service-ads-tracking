@@ -28,20 +28,23 @@ from reddit_service_ads_tracking.lib import (
 
 app_config = get_appsettings("test.ini", name="main")
 cfg = config.parse_config(app_config)
-signer = MessageSigner(cfg.click_secret)
+signer = MessageSigner(cfg.ads_tracking.click_secret)
 
 
 def _encode_data(data):
     return base64.urlsafe_b64encode(json.dumps(data))
 
 
-def _generate_click_url(url, data):
+def _generate_click_url(url, data, expires=None):
+    if expires is None:
+        expires = cfg.ads_tracking.max_click_age
+
     params = {
         "url": url,
         "data": data,
         "hmac": signer.make_signature(
             "|".join([url, data]),
-            max_age=timedelta(hours=cfg.max_click_hours)
+            max_age=expires,
         ),
     }
 
