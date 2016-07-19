@@ -32,7 +32,7 @@ signer = MessageSigner(cfg.click_secret)
 
 
 def _encode_data(data):
-    return base64.b64encode(json.dumps(data))
+    return base64.urlsafe_b64encode(json.dumps(data))
 
 
 def _generate_click_url(url, data):
