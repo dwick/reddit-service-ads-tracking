@@ -63,7 +63,8 @@ class TrackingService(object):
             return response.abort(request, 400,
                                   "missing required query parameters")
 
-        result, process_notes = None, ClickProcessNotes.VALID
+        result = None
+        process_notes = ClickProcessNotes.VALID
         expired_on = None
 
         try:
