@@ -17,9 +17,11 @@ from baseplate.integration.pyramid import BaseplateConfigurator
 from enum import Enum
 from pyramid.config import Configurator
 
-from reddit_service_ads_tracking import config
-from reddit_service_ads_tracking.lib import (
+from reddit_service_ads_tracking import (
+    config,
     events,
+)
+from reddit_service_ads_tracking.lib import (
     response,
     urls,
 )

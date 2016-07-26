@@ -54,7 +54,7 @@ def _generate_click_url(url, data, expires=None):
 class EndpointTests(unittest.TestCase):
     # ensure `MessageQueue`s aren't created since POSIX queues
     # don't play nice with the testing environment.
-    @patch_service("lib.events.EventQueue")
+    @patch_service("events.EventQueue")
     def setUp(self, EventQueue):
         app = make_wsgi_app(app_config)
         self.test_app = webtest.TestApp(app)

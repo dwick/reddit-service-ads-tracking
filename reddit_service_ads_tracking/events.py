@@ -4,8 +4,7 @@ import logging
 from urllib import unquote
 from urlparse import urlparse
 
-
-from . import useragent
+from reddit_service_ads_tracking.lib import useragent
 
 logger = logging.getLogger(__name__)
 

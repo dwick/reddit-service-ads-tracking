@@ -12,14 +12,16 @@ from baseplate.events import (
 )
 from pyramid.request import Request
 
-from ... import (
+from .. import (
     mock,
     patch_service,
 )
 
-from reddit_service_ads_tracking import ClickProcessNotes
-from reddit_service_ads_tracking.lib import (
+from reddit_service_ads_tracking import (
+    ClickProcessNotes,
     events,
+)
+from reddit_service_ads_tracking.lib import (
     useragent,
 )
 
@@ -39,7 +41,7 @@ USER_AGENT_PARSED = useragent.parse(USER_AGENT)
 
 
 class EventQueueTests(unittest.TestCase):
-    @patch_service("lib.events.EventQueue.__init__")
+    @patch_service("events.EventQueue.__init__")
     def setUp(self, __init__):
         # ensure `MessageQueues` aren't created since POSIX queues
         # don't play nice with the testing environment.
@@ -57,7 +59,7 @@ class EventQueueTests(unittest.TestCase):
             args, kwargs = put.call_args
             self.assertEqual(args[0], mock_event)
 
-    @patch_service("lib.events.logger")
+    @patch_service("events.logger")
     def test_save_event_too_large(self, logger):
         mock_event = mock.MagicMock(autospec=events.Event)
         mock_metrics = mock.MagicMock()
@@ -69,7 +71,7 @@ class EventQueueTests(unittest.TestCase):
             self.assertEqual(logger.warning.call_count, 1)
             self.assertEqual(mock_metrics.counter.call_count, 0)
 
-    @patch_service("lib.events.logger")
+    @patch_service("events.logger")
     def test_save_event_too_large_with_request(self, logger):
         mock_event = mock.MagicMock(autospec=events.Event)
         mock_metrics = mock.MagicMock()
@@ -85,7 +87,7 @@ class EventQueueTests(unittest.TestCase):
             self.assertEqual(logger.warning.call_count, 1)
             self.assertEqual(mock_metrics.counter.call_count, 1)
 
-    @patch_service("lib.events.logger")
+    @patch_service("events.logger")
     def test_save_event_queue_full(self, logger):
         mock_event = mock.MagicMock(autospec=events.Event)
         mock_metrics = mock.MagicMock()
@@ -97,7 +99,7 @@ class EventQueueTests(unittest.TestCase):
             self.assertEqual(logger.warning.call_count, 1)
             self.assertEqual(mock_metrics.counter.call_count, 0)
 
-    @patch_service("lib.events.logger")
+    @patch_service("events.logger")
     def test_save_event_queue_full_with_request(self, logger):
         mock_event = mock.MagicMock(autospec=events.Event)
         mock_metrics = mock.MagicMock()
