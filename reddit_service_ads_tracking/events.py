@@ -14,33 +14,9 @@ def _get_domain(url):
 
 
 class EventQueue(baseplate.events.EventQueue):
-    def click_event(self, url,
-                    process_notes,
-                    expired_on=None,
-                    request=None,
-                    **kwargs):
-        """Create a 'ad_click' event for event-collector
-
-        url: The destination of the click
-        """
-        event = Event(
-            topic="ad_serving_event",
-            event_type="ad_click",
-            request=request,
-        )
-
-        event.set_field("url", url)
-        event.set_field("process_notes", process_notes.value)
-        event.set_field("expired_on", expired_on)
-
-        for key, value in kwargs.items():
-            event.set_field(key, value)
-
-        self.save_event(event)
-
-    def save_event(self, event, request=None):
+    def put(self, event, request=None):
         try:
-            self.put(event)
+            super(EventQueue, self).put(event)
         except baseplate.events.EventTooLargeError as exc:
             logger.warning("%s", exc)
 
@@ -134,3 +110,23 @@ class Event(baseplate.events.Event):
                 data["client_ipv4_16"] = ".".join(octets[:2])
 
         return data
+
+
+class ClickEvent(Event):
+    def __init__(self, url,
+                 process_notes,
+                 expired_on=None,
+                 request=None,
+                 **kwargs):
+        super(ClickEvent, self).__init__(
+            topic="ad_serving_event",
+            event_type="ad_click",
+            request=request,
+        )
+
+        self.set_field("url", url)
+        self.set_field("process_notes", process_notes.value)
+        self.set_field("expired_on", expired_on)
+
+        for key, value in kwargs.items():
+            self.set_field(key, value)

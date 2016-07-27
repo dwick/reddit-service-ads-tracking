@@ -95,14 +95,15 @@ class TrackingService(object):
                                     "unable to parse `data`: %s" % e.message)
 
         destination = urls.fix_query_encoding(url)
-
-        self.event_queue.click_event(
+        click = events.ClickEvent(
             url=destination,
             process_notes=process_notes,
             request=request,
             expired_on=expired_on,
             **data
         )
+
+        self.event_queue.save_event(click)
 
         if result:
             return result

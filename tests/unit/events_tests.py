@@ -49,30 +49,30 @@ class EventQueueTests(unittest.TestCase):
 
         self.queue = events.EventQueue("test")
 
-    def test_save_event(self):
+    def test_put(self):
         mock_event = mock.MagicMock(autospec=events.Event)
 
-        with mock.patch.object(self.queue, "put") as put:
-            self.queue.save_event(mock_event)
+        with patch_service("events.baseplate.events.EventQueue.put") as put:
+            self.queue.put(mock_event)
 
             self.assertEqual(put.call_count, 1)
             args, kwargs = put.call_args
             self.assertEqual(args[0], mock_event)
 
     @patch_service("events.logger")
-    def test_save_event_too_large(self, logger):
+    def test_put_too_large(self, logger):
         mock_event = mock.MagicMock(autospec=events.Event)
         mock_metrics = mock.MagicMock()
 
-        with mock.patch.object(self.queue, "put") as put:
+        with patch_service("events.baseplate.events.EventQueue.put") as put:
             put.side_effect = EventTooLargeError(MAX_EVENT_SIZE + 1)
 
-            self.queue.save_event(mock_event)
+            self.queue.put(mock_event)
             self.assertEqual(logger.warning.call_count, 1)
             self.assertEqual(mock_metrics.counter.call_count, 0)
 
     @patch_service("events.logger")
-    def test_save_event_too_large_with_request(self, logger):
+    def test_put_too_large_with_request(self, logger):
         mock_event = mock.MagicMock(autospec=events.Event)
         mock_metrics = mock.MagicMock()
         mock_request = mock.MagicMock(
@@ -80,27 +80,27 @@ class EventQueueTests(unittest.TestCase):
             autospec=Request,
         )
 
-        with mock.patch.object(self.queue, "put") as put:
+        with patch_service("events.baseplate.events.EventQueue.put") as put:
             put.side_effect = EventTooLargeError(MAX_EVENT_SIZE + 1)
 
-            self.queue.save_event(mock_event, mock_request)
+            self.queue.put(mock_event, mock_request)
             self.assertEqual(logger.warning.call_count, 1)
             self.assertEqual(mock_metrics.counter.call_count, 1)
 
     @patch_service("events.logger")
-    def test_save_event_queue_full(self, logger):
+    def test_put_queue_full(self, logger):
         mock_event = mock.MagicMock(autospec=events.Event)
         mock_metrics = mock.MagicMock()
 
-        with mock.patch.object(self.queue, "put") as put:
+        with patch_service("events.baseplate.events.EventQueue.put") as put:
             put.side_effect = EventQueueFullError
 
-            self.queue.save_event(mock_event)
+            self.queue.put(mock_event)
             self.assertEqual(logger.warning.call_count, 1)
             self.assertEqual(mock_metrics.counter.call_count, 0)
 
     @patch_service("events.logger")
-    def test_save_event_queue_full_with_request(self, logger):
+    def test_put_queue_full_with_request(self, logger):
         mock_event = mock.MagicMock(autospec=events.Event)
         mock_metrics = mock.MagicMock()
         mock_request = mock.MagicMock(
@@ -108,32 +108,12 @@ class EventQueueTests(unittest.TestCase):
             autospec=Request,
         )
 
-        with mock.patch.object(self.queue, "put") as put:
+        with patch_service("events.baseplate.events.EventQueue.put") as put:
             put.side_effect = EventQueueFullError
 
-            self.queue.save_event(mock_event, mock_request)
+            self.queue.put(mock_event, mock_request)
             self.assertEqual(logger.warning.call_count, 1)
             self.assertEqual(mock_metrics.counter.call_count, 1)
-
-    def test_click_event(self):
-        with mock.patch.object(self.queue, "save_event") as save_event:
-            self.queue.click_event(
-                url="http://example.com",
-                process_notes=ClickProcessNotes.VALID,
-                foo="bar",
-                boo="far",
-            )
-
-            self.assertEqual(save_event.call_count, 1)
-            args, kwargs = save_event.call_args
-            event = args[0]
-
-            self.assertEqual(event.topic, "ad_serving_event")
-            self.assertEqual(event.event_type, "ss.ad_click")
-            self.assertEqual(event.get_field("url"), "http://example.com")
-            self.assertEqual(event.get_field("process_notes"), "VALID")
-            self.assertEqual(event.get_field("foo"), "bar")
-            self.assertEqual(event.get_field("boo"), "far")
 
 
 class EventTests(unittest.TestCase):
@@ -329,3 +309,20 @@ class EventTests(unittest.TestCase):
         self.assertEqual(data, dict(
             client_ip=IP_V6,
         ))
+
+
+class ClickEventTests(unittest.TestCase):
+    def test_minimal_constructor(self):
+        click = events.ClickEvent(
+            url="http://example.com",
+            process_notes=ClickProcessNotes.VALID,
+            foo="bar",
+            boo="far",
+        )
+
+        self.assertEqual(click.topic, "ad_serving_event")
+        self.assertEqual(click.event_type, "ss.ad_click")
+        self.assertEqual(click.get_field("url"), "http://example.com")
+        self.assertEqual(click.get_field("process_notes"), "VALID")
+        self.assertEqual(click.get_field("foo"), "bar")
+        self.assertEqual(click.get_field("boo"), "far")
