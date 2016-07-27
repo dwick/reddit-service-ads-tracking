@@ -101,13 +101,6 @@ class Event(baseplate.events.Event):
         ip = getattr(request, "ip", None)
         if ip:
             data["client_ip"] = ip
-            # since we obfuscate IP addresses in the DS pipeline, we can't
-            # extract the subnet for analysis after this step. So,
-            # pre-generate (and separately obfuscate) the subnets.
-            if "." in ip:
-                octets = ip.split(".")
-                data["client_ipv4_24"] = ".".join(octets[:3])
-                data["client_ipv4_16"] = ".".join(octets[:2])
 
         return data
 

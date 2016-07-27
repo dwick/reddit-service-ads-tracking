@@ -170,8 +170,6 @@ class EventTests(unittest.TestCase):
                 "referrer_domain": "reddit.com",
                 "obfuscated_data": {
                     "client_ip": IP_V4,
-                    "client_ipv4_24": "192.168.1",
-                    "client_ipv4_16": "192.168",
                 },
             },
         })
@@ -295,8 +293,6 @@ class EventTests(unittest.TestCase):
 
         self.assertEqual(data, dict(
             client_ip=IP_V4,
-            client_ipv4_24="192.168.1",
-            client_ipv4_16="192.168",
         ))
 
     def test_get_sensitive_request_data_with_ipv6(self):
